@@ -39,15 +39,25 @@ public class Simulator {
     }
 
     public static void main(String[] args) throws Exception{
-            List<Process> workload = TraceParser.parseWorkload("workload.txt");
+        List<Process> universalWorkload = TraceParser.parseWorkload("workload.txt");
 
-            SchedulingAlgo algo = new FCFS();
-            Kernel kernel = new Kernel(algo);
-            Simulator sim = new Simulator(kernel, workload);
+        System.out.println("FCFS START!\n\n");
+        SchedulingAlgo fcfsAlgo = new FCFS();
+        Kernel fcfsKernel = new Kernel(fcfsAlgo);
+        Simulator fcfsSim = new Simulator(fcfsKernel, universalWorkload);
+        fcfsSim.run();
+        System.out.println("FCFS END!\n\n");
 
-            sim.run();
+        universalWorkload = TraceParser.parseWorkload("workload.txt");
+        System.out.println("SJF START\n\n");
+        SchedulingAlgo sjfAlgo = new SJF();
+        Kernel sfjKernel = new Kernel(sjfAlgo);
+        Simulator sjfSim = new Simulator(sfjKernel, universalWorkload);
+        sjfSim.run();
+        System.out.println("SJF END\n\n");
 
 
     }
+
 
 }

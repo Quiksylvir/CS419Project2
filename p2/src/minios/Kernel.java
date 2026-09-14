@@ -1,13 +1,12 @@
 package minios;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class Kernel {
     private final SchedulingAlgo algo;
     private final List<Process> readyQueue = new ArrayList<>();
     private final List<Process> waitQueue = new ArrayList<>();
+    private Map<Integer,Integer> startTimes = new HashMap<>();
     private Process runningProcess = null;
 
     public Kernel(SchedulingAlgo algo) {
@@ -113,6 +112,7 @@ public class Kernel {
     private Process dispatchNextProcess(int currentTime) {
         runningProcess = algo.selectNextProcess(readyQueue);
         if (runningProcess != null) {
+            addInitialStartTime(currentTime, runningProcess.pid);
             System.out.println("[Tick " + currentTime + "] Process " + runningProcess.pid + " executes.");
             runningProcess.state = Process.State.RUNNING;
             return runningProcess;
@@ -122,9 +122,19 @@ public class Kernel {
 
     }
 
+    private void addInitialStartTime(int currentTime, int pid) {
+        if (!startTimes.containsKey(pid)) {
+            startTimes.put(pid, currentTime);
+        }
+    }
+
     public boolean isIdle() {
         return runningProcess == null &&
                 readyQueue.isEmpty() &&
                 waitQueue.isEmpty();
+    }
+
+    public Map<Integer, Integer> getStartTimes() {
+        return startTimes;
     }
 }

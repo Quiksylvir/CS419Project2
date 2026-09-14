@@ -1,7 +1,10 @@
 package minios;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class Simulator {
     private final Kernel kernel;
@@ -39,25 +42,44 @@ public class Simulator {
     }
 
     public static void main(String[] args) throws Exception{
-        List<Process> universalWorkload = TraceParser.parseWorkload("workload.txt");
+        SchedulingAlgo FCFSAlgo = new FCFS();
+        startSim(FCFSAlgo);
 
-        System.out.println("FCFS START!\n\n");
-        SchedulingAlgo fcfsAlgo = new FCFS();
-        Kernel fcfsKernel = new Kernel(fcfsAlgo);
-        Simulator fcfsSim = new Simulator(fcfsKernel, universalWorkload);
-        fcfsSim.run();
-        System.out.println("FCFS END!\n\n");
-
-        universalWorkload = TraceParser.parseWorkload("workload.txt");
-        System.out.println("SJF START\n\n");
-        SchedulingAlgo sjfAlgo = new SJF();
-        Kernel sfjKernel = new Kernel(sjfAlgo);
-        Simulator sjfSim = new Simulator(sfjKernel, universalWorkload);
-        sjfSim.run();
-        System.out.println("SJF END\n\n");
+        SchedulingAlgo SJFAlgo = new SJF();
+        startSim(SJFAlgo);
 
 
     }
 
+    private static void startSim(SchedulingAlgo Algo) throws IOException {
+        List<Process> universalWorkload = TraceParser.parseWorkload("workload.txt");
+        Map<Integer, Integer> arrivalTimes = new HashMap<>();
+        getArrivalTimes(universalWorkload, arrivalTimes);
+
+        System.out.println("\n\nSimulation START!");
+        Kernel Kernel = new Kernel(Algo);
+        Simulator Sim = new Simulator(Kernel, universalWorkload);Sim.run();
+        System.out.println("Average wait time: " + getAverageWaitTime(arrivalTimes, Kernel.getStartTimes()));
+        System.out.println("Simulation END!\n\n");
+    }
+
+
+    private static void getArrivalTimes(List<Process> universalWorkload, Map<Integer, Integer> arrivalTimes) {
+        for (int x = 0; x < universalWorkload.size(); x++) {
+            arrivalTimes.put(universalWorkload.get(x).pid, universalWorkload.get(x).arrivalTime);
+        }
+    }
+
+    private static double getAverageWaitTime(Map<Integer, Integer> arrivalTimes, Map<Integer, Integer> startTimes) {
+        double runningTotal = 0;
+        System.out.println("Arrives: " + arrivalTimes);
+        System.out.println("Starts: " + startTimes);
+
+        for (int x = 1; x <= arrivalTimes.size();x++) {
+            runningTotal += startTimes.get(x) - arrivalTimes.get(x);
+        }
+        return runningTotal / arrivalTimes.size();
+    }
 
 }
+

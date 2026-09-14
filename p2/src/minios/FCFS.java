@@ -3,6 +3,7 @@ package minios;
 import java.util.List;
 
 public class FCFS implements SchedulingAlgo {
+
     @Override
     public void addProcess(List<Process> readyQueue, Process p) {
         // FCFS means appending to end of the queue

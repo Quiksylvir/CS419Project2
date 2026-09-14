@@ -3,6 +3,7 @@ package minios;
 import java.util.List;
 
 public interface SchedulingAlgo {
+
     // Add a process to the Ready Queue
     void addProcess(List<Process> readyQueue, Process p);
 

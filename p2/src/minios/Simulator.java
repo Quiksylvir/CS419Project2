@@ -42,22 +42,26 @@ public class Simulator {
     }
 
     public static void main(String[] args) throws Exception{
+        int quantum = 0;
         SchedulingAlgo FCFSAlgo = new FCFS();
-        startSim(FCFSAlgo);
+        startSim(FCFSAlgo, quantum);
 
         SchedulingAlgo SJFAlgo = new SJF();
-        startSim(SJFAlgo);
+        startSim(SJFAlgo, quantum);
 
+        quantum = 2;
+        SchedulingAlgo RR2Algo = new RR2();
+        startSim(RR2Algo, quantum);
 
     }
 
-    private static void startSim(SchedulingAlgo Algo) throws IOException {
+    private static void startSim(SchedulingAlgo Algo, int quantum) throws IOException {
         List<Process> universalWorkload = TraceParser.parseWorkload("workload.txt");
         Map<Integer, Integer> arrivalTimes = new HashMap<>();
         getArrivalTimes(universalWorkload, arrivalTimes);
 
         System.out.println("\n\nSimulation START!");
-        Kernel Kernel = new Kernel(Algo);
+        Kernel Kernel = new Kernel(Algo, quantum);
         Simulator Sim = new Simulator(Kernel, universalWorkload);Sim.run();
         System.out.println("Average wait time: " + getAverageWaitTime(arrivalTimes, Kernel.getStartTimes()));
         System.out.println("Simulation END!\n\n");

@@ -9,8 +9,14 @@ public class Kernel {
     private Map<Integer,Integer> startTimes = new HashMap<>();
     private Process runningProcess = null;
 
-    public Kernel(SchedulingAlgo algo) {
+    private int quantumLeft = 0;
+    private final int TIME_QUANTUM;
+
+
+    public Kernel(SchedulingAlgo algo, int timeQuantum) {
         this.algo = algo;
+        this.TIME_QUANTUM = timeQuantum;
+        this.quantumLeft = timeQuantum;
     }
 
     public void admitProcess(Process p) {
@@ -64,10 +70,20 @@ public class Kernel {
             else if(inst.remainingTicks > 0){
                 inst.remainingTicks--;
                 cpuCycleUsed = true;
+                quantumLeft--;
                 if (inst.remainingTicks == 0) {
                     // The instruction now finishes; load the next
                     // instruction.
                     runningProcess.programCounter++;
+                }
+
+                if (quantumLeft == 0) {
+                    if (runningProcess.getCurrentInstruction() != null) {
+                        System.out.println("[Tick " + (currentTime+1) + "] Process " + runningProcess.pid + " time quantum expired. Preempting.");
+                        runningProcess.state = Process.State.READY;
+                        algo.addProcess(readyQueue,runningProcess);
+                        runningProcess = null;
+                    }
                 }
             }
 
@@ -105,6 +121,7 @@ public class Kernel {
     }
 
     private void terminateProcess(Process p) {
+        quantumLeft = TIME_QUANTUM;
         p.state = Process.State.TERMINATED;
         runningProcess = null;
     }
@@ -112,6 +129,7 @@ public class Kernel {
     private Process dispatchNextProcess(int currentTime) {
         runningProcess = algo.selectNextProcess(readyQueue);
         if (runningProcess != null) {
+            quantumLeft = TIME_QUANTUM;
             addInitialStartTime(currentTime, runningProcess.pid);
             System.out.println("[Tick " + currentTime + "] Process " + runningProcess.pid + " executes.");
             runningProcess.state = Process.State.RUNNING;
@@ -122,16 +140,17 @@ public class Kernel {
 
     }
 
-    private void addInitialStartTime(int currentTime, int pid) {
-        if (!startTimes.containsKey(pid)) {
-            startTimes.put(pid, currentTime);
-        }
-    }
-
     public boolean isIdle() {
         return runningProcess == null &&
                 readyQueue.isEmpty() &&
                 waitQueue.isEmpty();
+    }
+
+
+    private void addInitialStartTime(int currentTime, int pid) {
+        if (!startTimes.containsKey(pid)) {
+            startTimes.put(pid, currentTime);
+        }
     }
 
     public Map<Integer, Integer> getStartTimes() {

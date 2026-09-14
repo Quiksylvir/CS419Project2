@@ -7,19 +7,7 @@ public class SJF implements  SchedulingAlgo{
 
     @Override
     public void addProcess(List<Process> readyQueue, Process p) {
-        if (readyQueue.isEmpty()) {
-            System.out.println(p.pid + " " + p.getCurrentInstruction().duration);
-            readyQueue.add(p);
-        } else {
-            System.out.println(p.pid + " " + p.getCurrentInstruction().duration);
-            for (int x = 0; x < readyQueue.size() - 1; x++) {
-                if (readyQueue.get(x).getCurrentInstruction().duration > p.getCurrentInstruction().duration) {
-                    readyQueue.add(x, p);
-                } else {
-                    readyQueue.addLast(p);
-                }
-            }
-        }
+        readyQueue.add(p);
     }
 
     @Override
@@ -27,7 +15,22 @@ public class SJF implements  SchedulingAlgo{
         if (readyQueue.isEmpty()) {
             return null;
         } else {
-            return readyQueue.remove(0);
+            if (readyQueue.size() == 1) {
+                return readyQueue.removeFirst();
+            } else {
+                int tempSmallest = 0;
+                for (int index = 0; index < readyQueue.size() - 1; index++) {
+                    if (getDuration(index, readyQueue) < getDuration(index + 1, readyQueue)) {
+                        tempSmallest = index;
+                    }
+                }
+                return readyQueue.remove(tempSmallest);
+            }
+
         }
+    }
+
+    public int getDuration(int index, List<Process> readyQueue) {
+        return readyQueue.get(index).getCurrentInstruction().duration;
     }
 }
